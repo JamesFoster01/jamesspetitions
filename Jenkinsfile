@@ -41,6 +41,8 @@ pipeline {
 
         stage('Deploy') {
             steps {
+                echo 'Starting deploy stage'
+                sh 'ls -l target'
                 echo 'Deployment step will go here once EC2 and Tomcat are ready'
             }
         }
