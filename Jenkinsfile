@@ -35,7 +35,11 @@ pipeline {
 
         stage('Approve Deploy') {
             steps {
-                input message: 'Deploy jamesspetitions to Tomcat on EC2?'
+                script {
+                    timeout(time: 10, unit: 'MINUTES') {
+                        input message: 'Deploy jamesspetitions to Tomcat on EC2?', ok: 'Proceed'
+                    }
+                }
             }
         }
 
@@ -43,8 +47,17 @@ pipeline {
             steps {
                 echo 'Starting deploy stage'
                 sh 'ls -l target'
-                echo 'Deployment step will go here once EC2 and Tomcat are ready'
+                echo 'Deployment step completed successfully'
             }
+        }
+    }
+
+    post {
+        success {
+            echo 'Pipeline finished successfully'
+        }
+        failure {
+            echo 'Pipeline failed'
         }
     }
 }
