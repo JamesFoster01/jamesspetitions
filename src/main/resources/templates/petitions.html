@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-  <title>All Petitions</title>
+  <title>All Petitions CI/CD DEMO</title>
 </head>
 <body>
 <h1>All Petitions</h1>
 
 <p>
-  <a href="/petitions/create">Create Petition</a> |
-  <a href="/petitions/search">Search Petitions</a>
+  <a th:href="@{/petitions/create}">Create Petition</a> |
+  <a th:href="@{/petitions/search}">Search Petitions</a>
 </p>
 
 <ul>
