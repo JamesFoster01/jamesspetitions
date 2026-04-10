@@ -48,16 +48,14 @@ pipeline {
             steps {
                 withCredentials([file(credentialsId: 'ec2-pem-file', variable: 'PEM_FILE')]) {
                     sh '''
-                        cp "$PEM_FILE" deploy_key.pem
-                        tr -d '\\r' < deploy_key.pem > deploy_key_clean.pem
-                        chmod 600 deploy_key_clean.pem
+                        chmod 600 "$PEM_FILE"
 
-                        scp -i deploy_key_clean.pem \
+                        scp -i "$PEM_FILE" \
                             -o IdentitiesOnly=yes \
                             -o StrictHostKeyChecking=no \
                             target/$APP_WAR $EC2_USER@$EC2_HOST:~
 
-                        ssh -i deploy_key_clean.pem \
+                        ssh -i "$PEM_FILE" \
                             -o IdentitiesOnly=yes \
                             -o StrictHostKeyChecking=no \
                             $EC2_USER@$EC2_HOST "
