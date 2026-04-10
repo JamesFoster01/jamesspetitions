@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Search Results</title>
+</head>
+<body>
+<h1>Search Results</h1>
+
+<p>Results for: <strong th:text="${keyword}"></strong></p>
+
+<ul>
+  <li th:each="petition : ${results}">
+    <a th:href="@{/petitions/{id}(id=${petition.id})}" th:text="${petition.title}"></a>
+  </li>
+</ul>
+
+
+<p><a href="/petitions/search">Search again</a></p>
+<p><a href="/petitions">Back to petitions</a></p>
+</body>
+</html>

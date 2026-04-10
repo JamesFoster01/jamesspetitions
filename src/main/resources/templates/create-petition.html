@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Create Petition</title>
+</head>
+<body>
+<h1>Create a Petition</h1>
+
+<form th:action="@{/petitions/create}" th:object="${petition}" method="post">
+    <div>
+        <label>Title:</label>
+        <input type="text" th:field="*{title}" required>
+    </div>
+    <div>
+        <label>Description:</label>
+        <textarea th:field="*{description}" required></textarea>
+    </div>
+    <div>
+        <label>Creator Name:</label>
+        <input type="text" th:field="*{creatorName}" required>
+    </div>
+    <button type="submit">Create Petition</button>
+</form>
+
+<p><a href="/petitions">Back to petitions</a></p>
+</body>
+</html>
