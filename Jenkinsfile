@@ -48,16 +48,26 @@ pipeline {
             steps {
                 withCredentials([file(credentialsId: 'ec2-pem-file', variable: 'PEM_FILE')]) {
                     sh '''
-                        chmod 600 "$PEM_FILE"
-                        scp -i "$PEM_FILE" -o StrictHostKeyChecking=no target/$APP_WAR $EC2_USER@$EC2_HOST:~
-                        ssh -i "$PEM_FILE" -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST "
-                            sudo bash -c 'cd /opt/tomcat/bin && ./shutdown.sh' || true
-                            sudo rm -rf /opt/tomcat/webapps/jamesspetitions-0.0.1-SNAPSHOT
-                            sudo rm -f /opt/tomcat/webapps/jamesspetitions-0.0.1-SNAPSHOT.war
-                            sudo rm -rf /opt/tomcat/webapps/ec2-user
-                            sudo mv /home/$EC2_USER/$APP_WAR /opt/tomcat/webapps/
-                            sudo bash -c 'cd /opt/tomcat/bin && ./startup.sh'
-                        "
+                        cp "$PEM_FILE" deploy_key.pem
+                        tr -d '\\r' < deploy_key.pem > deploy_key_clean.pem
+                        chmod 600 deploy_key_clean.pem
+
+                        scp -i deploy_key_clean.pem \
+                            -o IdentitiesOnly=yes \
+                            -o StrictHostKeyChecking=no \
+                            target/$APP_WAR $EC2_USER@$EC2_HOST:~
+
+                        ssh -i deploy_key_clean.pem \
+                            -o IdentitiesOnly=yes \
+                            -o StrictHostKeyChecking=no \
+                            $EC2_USER@$EC2_HOST "
+                                sudo bash -c 'cd /opt/tomcat/bin && ./shutdown.sh' || true
+                                sudo rm -rf /opt/tomcat/webapps/jamesspetitions-0.0.1-SNAPSHOT
+                                sudo rm -f /opt/tomcat/webapps/jamesspetitions-0.0.1-SNAPSHOT.war
+                                sudo rm -rf /opt/tomcat/webapps/ec2-user
+                                sudo mv /home/$EC2_USER/$APP_WAR /opt/tomcat/webapps/
+                                sudo bash -c 'cd /opt/tomcat/bin && ./startup.sh'
+                            "
                     '''
                 }
             }
