@@ -1,6 +1,12 @@
 pipeline {
     agent any
 
+    environment {
+        EC2_HOST = '16.170.141.194'
+        EC2_USER = 'ec2-user'
+        APP_WAR  = 'jamesspetitions-0.0.1-SNAPSHOT.war'
+    }
+
     stages {
         stage('Get Code') {
             steps {
@@ -23,31 +29,35 @@ pipeline {
         stage('Package') {
             steps {
                 sh './mvnw clean package'
-                sh 'cp target/*.war target/jamesspetitions.war'
             }
         }
 
         stage('Archive WAR') {
             steps {
-                archiveArtifacts artifacts: 'target/jamesspetitions.war', fingerprint: true
+                archiveArtifacts artifacts: 'target/*.war', fingerprint: true
             }
         }
 
         stage('Approve Deploy') {
             steps {
-                script {
-                    timeout(time: 10, unit: 'MINUTES') {
-                        input message: 'Deploy jamesspetitions to Tomcat on EC2?', ok: 'Proceed'
-                    }
-                }
+                input message: 'Deploy jamesspetitions to EC2?', ok: 'Proceed'
             }
         }
 
         stage('Deploy') {
             steps {
-                echo 'Starting deploy stage'
-                sh 'ls -l target'
-                echo 'Deployment step completed successfully'
+                sshagent(credentials: ['ec2-jamesspetitions-key']) {
+                    sh '''
+                        scp -o StrictHostKeyChecking=no target/${APP_WAR} ${EC2_USER}@${EC2_HOST}:~
+                        ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} '
+                            sudo bash -c "cd /opt/tomcat/bin && ./shutdown.sh" || true
+                            sudo rm -rf /opt/tomcat/webapps/jamesspetitions-0.0.1-SNAPSHOT
+                            sudo rm -f /opt/tomcat/webapps/jamesspetitions-0.0.1-SNAPSHOT.war
+                            sudo mv ~/${APP_WAR} /opt/tomcat/webapps/
+                            sudo bash -c "cd /opt/tomcat/bin && ./startup.sh"
+                        '
+                    '''
+                }
             }
         }
     }
